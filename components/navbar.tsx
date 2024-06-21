@@ -23,7 +23,7 @@ const Navbar = () => {
   }, [time]);
 
   return (
-    <nav className="flex items-center justify-between px-12 mt-4">
+    <nav className="flex flex-col md:flex-row items-center justify-between px-2 lg:px-12 mt-4">
       <div>
         <div className="flex items-center">
           <Image src="/images/logo.svg" width={63} height={62} alt="logo" />
@@ -33,7 +33,7 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-6 mt-8 md:mt-0">
         <div className="p-4 text-[#755AE2] bg-[#ECE8FF] rounded-md flex gap-2 items-center">
           <Image
             src="/images/stopwatch.svg"

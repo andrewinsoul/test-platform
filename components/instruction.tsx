@@ -2,7 +2,7 @@ import Text from "./text";
 
 export const Instructions = () => (
   <div
-    className="flex w-[90%] md:w-[80%] lg:w-[60%] justify-center items-center mt-28"
+    className="flex w-[90%] md:w-[80%] lg:w-[60%] justify-center items-center mt-7 md:mt-28"
   >
     <section>
       <Text className="font-bold text-lg text-[22px]">System Check</Text>

@@ -47,15 +47,15 @@ export const CheckRequirements = () => {
   ];
   return (
     <div className="w-[90%] md:w-[80%] lg:w-[60%] mt-8 ">
-      <section className="flex w-[70%]">
-        <canvas className="border-2 border-purple-600 rounded-md w-[55%] h-[220px]">
+      <section className="flex w-full md:w-[70%] flex-col md:flex-row">
+        <canvas className="border-2 border-purple-600 rounded-md w-full md:w-[55%] h-[220px]">
           My video
         </canvas>
-        <div className="50% flex flex-wrap gap-4 ml-12">
+        <div className="50% flex flex-wrap gap-4 ml-0 mt-4 md:mt-0 justify-between md:ml-12">
           {requirments.map((item) => (
             <div
               key={item.hardware}
-              className="w-[45%] flex justify-center items-center flex-col rounded-md bg-[#F5F3FF]"
+              className="w-[47%] flex justify-center items-center flex-col rounded-md bg-[#F5F3FF]"
             >
               <div className="ml-auto pr-4 mr-2 w-[18px] h-[18px] bg-[#755AE2] rounded-full" />
               {item.icon}
