@@ -198,11 +198,11 @@ export const CheckRequirements = () => {
 
   return (
     <div className="w-[90%] md:w-[80%] lg:w-[60%] mt-8">
-      <section className="flex w-full md:w-[70%] flex-col md:flex-row">
+      <section className="flex w-full flex-col md:flex-row">
         <video
           autoPlay
           ref={videoRef}
-          className="border-2 border-purple-600 rounded-md w-full h-[220px]"
+          className="border-2 border-purple-600 rounded-md w-full w-[] h-[220px]"
         >
           My video
         </video>
