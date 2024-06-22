@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Text from "./text";
+import { Modal } from "./modal";
 
 const Navbar = () => {
   const [time, setTime] = useState(1800);
+  const [show, setShow] = useState(false);
   const converter = useCallback(
     (time: number): string =>
       `${Math.floor(time / 60)}:${String(time % 60).padStart(2, "0")}`,
@@ -18,6 +20,8 @@ const Navbar = () => {
       intervalId = window.setInterval(() => {
         setTime((prev) => prev - 1);
       }, 1000);
+    } else {
+      setShow(true)
     }
     return () => clearInterval(intervalId);
   }, [time]);
@@ -48,6 +52,21 @@ const Navbar = () => {
           <Image src="/images/eye.svg" width={20} height={20} alt="eye" />
         </div>
       </div>
+      <Modal
+        show={show}
+        setShow={setShow}
+        body={
+          <div className="flex justify-center mt-8">
+            <p>Your Time is up</p>
+          </div>
+        }
+        footer={
+          <div className="flex justify-end mr-4 mb-4">
+            <button className="bg-[#755AE2] text-white rounded-md px-6 p-2">Continue</button>
+          </div>
+        }
+        title={<p>STOP!</p>}
+      />
     </nav>
   );
 };

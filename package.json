@@ -9,6 +9,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "encoding": "^0.1.13",
+    "face-api.js": "^0.22.2",
+    "network-speed": "^2.1.1",
     "next": "14.2.4",
     "react": "^18",
     "react-dom": "^18",
@@ -25,5 +28,10 @@
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
+  },
+  "browser": {
+    "fs": false,
+    "os": false,
+    "path": false
   }
 }
