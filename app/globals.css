@@ -30,3 +30,16 @@
   bottom: 0;
   background-color: rgba(0,0,0,0.8);
 }
+
+.CircularProgressbar-path {
+  stroke: red;
+}
+.CircularProgressbar-trail {
+  stroke: gray;
+}
+.CircularProgressbar-text {
+  fill: yellow;
+}
+.CircularProgressbar-background {
+  fill: green;
+}

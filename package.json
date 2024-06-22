@@ -14,6 +14,7 @@
     "network-speed": "^2.1.1",
     "next": "14.2.4",
     "react": "^18",
+    "react-circular-progressbar": "^2.1.0",
     "react-dom": "^18",
     "react-modal": "^3.16.1",
     "tailwind-merge": "^2.3.0"

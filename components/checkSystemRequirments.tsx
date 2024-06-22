@@ -1,11 +1,13 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as faceapi from "face-api.js";
 import Image from "next/image";
 import NetworkSpeed from "network-speed";
 import { Modal } from "./modal";
+import CircularProgress from "./circularProgress";
 
 export const CheckRequirements = () => {
   const [videoTag, setVideoTag] = useState<null | HTMLVideoElement>(null);
@@ -14,7 +16,10 @@ export const CheckRequirements = () => {
   const [videoAudioPermission, setVideoAudioPermission] = useState(false);
   const [lighting, setLighting] = useState(false);
   const [brightnessIndex, setBrightnessIndex] = useState(0);
+  const [internetSpeed, setInternetSpeed] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [computeInternetSpeed, setComputeInternetSpeed] = useState(true);
+  const [computeLightingIndex, setComputeLightingIndex] = useState(true);
   const [faceDetections, setFaceDetections] = useState<
     faceapi.FaceDetection[] | []
   >([]);
@@ -24,10 +29,22 @@ export const CheckRequirements = () => {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [idInterval, setIdInterval] = useState(null);
+  
   const requestRef = useRef<number>(0);
-
+  const internetSpeedRef = useRef(0);
+  const videoSetIntervalId = useRef(0);
   const testNetworkSpeed = new NetworkSpeed();
+
+  const getSpeed = useCallback(async () => {
+    const baseUrl = "https://eu.httpbin.org/stream-bytes/500000";
+    const fileSizeInBytes = 500000;
+    const speed = await testNetworkSpeed.checkDownloadSpeed(
+      baseUrl,
+      fileSizeInBytes
+    );
+    setInternetSpeed(+speed.mbps >= 100 ? 100 : +speed.mbps)
+    console.log("SPEED >>>>>>> ", speed);
+  }, []);
 
   useEffect(() => {
     const loadModels = async () => {
@@ -65,7 +82,7 @@ export const CheckRequirements = () => {
         canvas.height = video?.videoHeight as number;
       }
 
-      const intervalId = setInterval(async () => {
+      const intervalId = window.setInterval(async () => {
         if (video) {
           const detections = await faceapi.detectAllFaces(
             video,
@@ -81,8 +98,8 @@ export const CheckRequirements = () => {
               ?.clearRect(0, 0, canvas.width, canvas.height);
         }
       }, 100);
-      // @ts-ignore
-      setIdInterval(intervalId);
+    
+      videoSetIntervalId.current = intervalId;
     };
 
     if (modelLoaded) {
@@ -99,17 +116,15 @@ export const CheckRequirements = () => {
   }, [videoMode, mediaStreamTracks, videoTag]);
 
   useEffect(() => {
-    const getSpeed = async () => {
-      const baseUrl = "https://eu.httpbin.org/stream-bytes/500000";
-      const fileSizeInBytes = 500000;
-      const speed = await testNetworkSpeed.checkDownloadSpeed(
-        baseUrl,
-        fileSizeInBytes
-      );
-      console.log(speed);
-    };
-    getSpeed();
-  }, []);
+    if (computeInternetSpeed) {
+      internetSpeedRef.current = window.setInterval(() => {
+        getSpeed();
+      }, 1500);
+    } else {
+      clearInterval(internetSpeedRef.current);
+    }
+    () => clearInterval(internetSpeedRef.current)
+  }, [computeInternetSpeed]);
 
   useEffect(() => {
     const calculateFrameBrightness = () => {
@@ -129,12 +144,14 @@ export const CheckRequirements = () => {
       );
 
       const avgBrightness = calculateBrightness(imageData);
-      setBrightnessIndex(avgBrightness);
+      setBrightnessIndex(avgBrightness > 5 ? avgBrightness + 40 : avgBrightness);
 
       requestRef.current = requestAnimationFrame(calculateFrameBrightness);
     };
-    // calculateFrameBrightness(); undo later
-  }, []);
+    if (computeLightingIndex) {
+      calculateFrameBrightness();
+    }
+  }, [computeLightingIndex]);
 
   const requirments = [
     {
@@ -184,7 +201,6 @@ export const CheckRequirements = () => {
   function calculateBrightness(imageData: any) {
     const pixels = imageData.data;
     let sum = 0;
-    console.log(pixels.length, "cpy");
     for (let i = 0; i < pixels.length; i += 4) {
       const brightness =
         0.34 * pixels[i] + 0.5 * pixels[i + 1] + 0.16 * pixels[i + 2];
@@ -201,17 +217,18 @@ export const CheckRequirements = () => {
       <section className="flex w-full flex-col md:flex-row">
         <video
           autoPlay
+          
           ref={videoRef}
-          className="border-2 border-purple-600 rounded-md w-full w-[] h-[220px]"
+          className={`border-2 ${faceDetections.length ? "border-red-600" : "border-purple-600"} rounded-md h-[220px]`}
         >
           My video
         </video>
         <canvas ref={canvasRef} className="absolute" />
-        <div className="w-full flex flex-wrap gap-4 ml-0 mt-4 md:mt-0 justify-between md:ml-12">
+        <div className="w-full flex flex-col md:flex-row md:flex-wrap gap-4 ml-0 mt-4 md:mt-0 justify-between md:ml-12">
           {requirments.map((item) => (
             <div
               key={item.hardware}
-              className="w-[47%] flex justify-center items-center flex-col rounded-md bg-[#F5F3FF]"
+              className="w-full md:w-[47%] flex justify-center items-center flex-col rounded-md bg-[#F5F3FF]"
             >
               {item.hardware === "Mic" && videoAudioPermission ? (
                 <div className="ml-auto mr-2">
@@ -234,7 +251,7 @@ export const CheckRequirements = () => {
               ) : item.hardware === "Lighting" && lighting ? (
                 <div className="ml-auto mr-2">
                   <Image
-                    src="/images/mic.svg"
+                    src="/images/lighting.svg"
                     width={16}
                     height={16}
                     alt="mic"
@@ -254,6 +271,24 @@ export const CheckRequirements = () => {
                     />
                   </div>
                 </div>
+              ) : item.hardware === "Internet speed" ? (
+                <CircularProgress value={internetSpeed}>
+                  <Image
+                    src="/images/wifi.svg"
+                    width={18}
+                    height={18}
+                    alt="icon"
+                  />
+                </CircularProgress>
+              ) : item.hardware === "Lighting" ? (
+                <CircularProgress value={brightnessIndex}>
+                  <Image
+                    src="/images/lighting.svg"
+                    width={18}
+                    height={18}
+                    alt="icon"
+                  />
+                </CircularProgress>
               ) : item.hardware === "Webcam" && faceDetections.length ? (
                 <div className="w-[39px] h-[39px] rounded-full bg-[transparent] border-2 border-[#755AE2] flex justify-center items-center">
                   <div className="w-[28px] h-[28px] rounded-full bg-[#755AE2] flex justify-center items-center">
@@ -275,10 +310,14 @@ export const CheckRequirements = () => {
       </section>
       <button
         onClick={() => {
-          setVideoMode(false);
-          setShowModal(true);
-          clearInterval(idInterval || 0);
-          cancelAnimationFrame(requestRef.current);
+          if (faceDetections.length && videoAudioPermission) {
+            setVideoMode(false);
+            setShowModal(true);
+            clearInterval(videoSetIntervalId.current);
+            cancelAnimationFrame(requestRef.current);
+            setComputeInternetSpeed(false);
+            setComputeLightingIndex(false)
+          }
         }}
         className="bg-[#755AE2] rounded-md text-white p-3 mt-8"
       >
@@ -289,8 +328,8 @@ export const CheckRequirements = () => {
         show={showModal}
         setShow={setShowModal}
         body={
-          <div className="flex justify-center mt-8">
-            <p className="w-[40%] text-center">
+          <div className="flex justify-center my-8">
+            <p className="w-[80%] md:w-[60%] lg:w-[40%] text-center">
               Kindly keep to the rules of the assessment and sit up, stay in
               front of your camera/webcam and start your assessment.
             </p>
